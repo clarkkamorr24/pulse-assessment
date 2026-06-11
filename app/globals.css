@@ -80,14 +80,20 @@ body {
   transform: scale(1.15);
 }
 
-/* The user's own "you are here" pin. */
-.pulse-me {
+/* The user's own "you are here" dot — a glowing accent dot, distinct from the
+   white-ringed peer dots, shown immediately on entry. */
+.pulse-me-dot {
   position: relative;
-  font-size: 20px;
-  line-height: 1;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  border: 2px solid #ffffff;
   cursor: default;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
-  animation: float 4s ease-in-out infinite;
+  box-shadow:
+    0 0 0 rgba(var(--accent-rgb), 0.5),
+    0 2px 6px rgba(0, 0, 0, 0.5);
+  animation: pulse-ring 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 .pulse-me-label {

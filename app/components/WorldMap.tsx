@@ -90,11 +90,10 @@ export default function WorldMap({
       if (cancelled) return;
       if (!meMarkerRef.current) {
         const el = document.createElement("div");
-        el.className = "pulse-me";
+        el.className = "pulse-me-dot";
         el.title = "You are here";
-        el.innerHTML = `<span class="pulse-me-label">Me</span>📍`;
-        // anchor "bottom" → the pin's tip sits on the exact coordinate.
-        meMarkerRef.current = new mapboxgl.Marker({ element: el, anchor: "bottom" })
+        el.innerHTML = `<span class="pulse-me-label">You</span>`;
+        meMarkerRef.current = new mapboxgl.Marker({ element: el })
           .setLngLat([me.lng, me.lat])
           .addTo(map);
       } else {
