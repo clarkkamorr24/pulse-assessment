@@ -325,17 +325,20 @@ export default function Home() {
       />
 
       {notice && (
-        <div className="absolute left-1/2 top-20 z-30 -translate-x-1/2 rounded-full bg-zinc-800/90 px-4 py-2 text-sm text-zinc-100 shadow-lg backdrop-blur">
+        <div className="glass absolute left-1/2 top-20 z-30 -translate-x-1/2 animate-drop-in rounded-full px-4 py-2 text-sm text-zinc-100 shadow-lg">
           {notice}
         </div>
       )}
 
       {conn.kind === "requesting" && (
-        <div className="absolute left-1/2 top-20 z-30 flex -translate-x-1/2 items-center gap-3 rounded-full bg-zinc-800/90 px-4 py-2 text-sm text-zinc-100 shadow-lg backdrop-blur">
-          <span>Requesting connection…</span>
+        <div className="glass absolute left-1/2 top-20 z-30 flex -translate-x-1/2 animate-drop-in items-center gap-3 rounded-full px-4 py-2 text-sm text-zinc-100 shadow-lg">
+          <span className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
+            Requesting connection…
+          </span>
           <button
             onClick={cancelRequest}
-            className="rounded-full bg-zinc-700 px-3 py-1 text-xs hover:bg-zinc-600"
+            className="rounded-full bg-white/10 px-3 py-1 text-xs transition hover:bg-white/20"
           >
             Cancel
           </button>
@@ -367,13 +370,15 @@ export default function Home() {
       )}
 
       {video === "requesting" && (
-        <div className="absolute bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-zinc-800/90 px-4 py-2 text-sm text-zinc-100 shadow-lg backdrop-blur">
+        <div className="glass absolute bottom-24 left-1/2 z-30 flex -translate-x-1/2 animate-drop-in items-center gap-2 rounded-full px-4 py-2 text-sm text-zinc-100 shadow-lg">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
           Waiting for stranger to accept video…
         </div>
       )}
 
       {video === "incoming" && (
         <ConnectionPrompt
+          icon="video"
           title="Start video call?"
           subtitle="The stranger wants to turn on video."
           acceptLabel="Accept"
