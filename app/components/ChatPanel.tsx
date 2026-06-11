@@ -151,6 +151,10 @@ export default function ChatPanel({
         )}
         {messages.map((m, i) => {
           const reactions = Object.entries(m.reactions);
+          // Open the palette toward the side with room: downward for messages
+          // in the top half (avoids clipping under the icebreaker), upward for
+          // the bottom half (avoids clipping under the composer).
+          const openDown = i < messages.length / 2;
           return (
             <div
               key={m.id}
@@ -201,14 +205,14 @@ export default function ChatPanel({
                   {reactingId === m.id && (
                     <>
                       <button
-                        className="fixed inset-0 z-10 cursor-default"
+                        className="fixed inset-0 z-30 cursor-default"
                         aria-label="Close reactions"
                         onClick={() => setReactingId(null)}
                       />
                       <div
-                        className={`glass absolute bottom-8 z-20 flex animate-pop-in gap-1 rounded-full px-1.5 py-1 shadow-xl ${
+                        className={`glass absolute z-40 flex animate-pop-in gap-1 rounded-full px-1.5 py-1 shadow-xl ${
                           m.mine ? "right-0" : "left-0"
-                        }`}
+                        } ${openDown ? "top-full mt-1" : "bottom-full mb-1"}`}
                       >
                         {REACTIONS.map((emoji) => (
                           <button
