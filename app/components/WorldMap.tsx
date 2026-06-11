@@ -155,11 +155,25 @@ export default function WorldMap({
 
   return (
     <div className="absolute inset-0">
-      <div ref={containerRef} className="h-full w-full bg-zinc-900" />
+      <div ref={containerRef} className="h-full w-full bg-background" />
+
+      {/* Top fade for legibility over the map */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-linear-to-b from-black/50 to-transparent" />
+
+      {/* Brand mark */}
+      <div className="absolute left-4 top-4 flex animate-fade-in items-center gap-2 select-none">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-linear-to-br from-emerald-400 to-cyan-400" />
+        </span>
+        <span className="text-sm font-semibold uppercase tracking-[0.25em] text-zinc-200">
+          Pulse
+        </span>
+      </div>
 
       {!TOKEN && (
         <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-          <p className="max-w-md rounded-lg bg-zinc-800 p-4 text-sm text-zinc-200">
+          <p className="glass max-w-md rounded-xl p-4 text-sm text-zinc-200">
             Set{" "}
             <code className="text-emerald-400">NEXT_PUBLIC_MAPBOX_TOKEN</code> in{" "}
             <code>.env</code> to load the map.
@@ -168,8 +182,9 @@ export default function WorldMap({
       )}
 
       {/* Online count */}
-      <div className="absolute bottom-4 left-4 rounded-full bg-zinc-900/80 px-3 py-1.5 text-xs text-zinc-300 backdrop-blur">
-        {peers.length} online
+      <div className="glass absolute bottom-4 left-4 flex animate-fade-in items-center gap-2 rounded-full px-3.5 py-2 text-xs font-medium text-zinc-200">
+        <span className="live-dot" />
+        {peers.length} {peers.length === 1 ? "person" : "people"} online
       </div>
     </div>
   );
