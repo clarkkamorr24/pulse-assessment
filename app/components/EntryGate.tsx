@@ -34,30 +34,92 @@ export default function EntryGate({
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col items-center justify-center gap-8 bg-zinc-950 p-6 text-zinc-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Pulse</h1>
-        <p className="mt-2 max-w-sm text-zinc-400">
-          A living globe of anonymous strangers. Drop onto the map and connect.
-        </p>
+    <div className="relative flex min-h-full flex-1 flex-col items-center justify-center gap-10 overflow-hidden bg-background p-6 text-zinc-100">
+      {/* Aurora backdrop */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div
+          className="absolute left-1/2 top-1/2 h-[120vmax] w-[120vmax] -translate-x-1/2 -translate-y-1/2 opacity-40 blur-3xl"
+          style={{
+            background:
+              "conic-gradient(from 0deg, rgba(52,211,153,0.25), rgba(34,211,238,0.18), rgba(16,185,129,0.0), rgba(52,211,153,0.25))",
+            animation: "aurora 24s linear infinite",
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_30%,var(--bg)_80%)]" />
       </div>
 
-      <button
-        onClick={enter}
-        disabled={status === "locating"}
-        className="rounded-full bg-emerald-400 px-8 py-3 font-semibold text-zinc-950 transition hover:bg-emerald-300 disabled:opacity-60"
-      >
-        {status === "locating" ? "Locating…" : "Enter Pulse"}
-      </button>
+      <div className="relative z-10 flex flex-col items-center gap-10 text-center">
+        <div className="animate-slide-up">
+          <div className="mb-5 flex items-center justify-center gap-2.5">
+            <span className="relative flex h-3 w-3">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+              <span className="relative inline-flex h-3 w-3 rounded-full bg-linear-to-br from-emerald-400 to-cyan-400" />
+            </span>
+            <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">
+              Pulse
+            </span>
+          </div>
+          <h1 className="bg-linear-to-br from-white via-white to-zinc-400 bg-clip-text text-5xl font-bold tracking-tight text-transparent sm:text-6xl">
+            Meet a stranger,
+            <br />
+            anywhere on Earth.
+          </h1>
+          <p className="mx-auto mt-5 max-w-md text-balance text-base leading-relaxed text-zinc-400">
+            A living globe of anonymous people. Drop onto the map, tap a glowing
+            dot, and start talking — text or video, peer-to-peer.
+          </p>
+        </div>
 
-      {status === "error" && (
-        <p className="max-w-sm text-center text-sm text-red-400">{error}</p>
-      )}
+        <button
+          onClick={enter}
+          disabled={status === "locating"}
+          className="group relative animate-slide-up overflow-hidden rounded-full bg-linear-to-r from-emerald-400 to-cyan-400 px-9 py-3.5 font-semibold text-zinc-950 shadow-[0_0_40px_-8px_rgba(52,211,153,0.7)] transition-all duration-300 hover:shadow-[0_0_50px_-4px_rgba(52,211,153,0.9)] disabled:opacity-60"
+          style={{ animationDelay: "0.08s" }}
+        >
+          <span className="relative z-10 flex items-center gap-2">
+            {status === "locating" ? (
+              <>
+                <svg
+                  className="h-4 w-4 animate-spin"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-90"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                  />
+                </svg>
+                Finding you…
+              </>
+            ) : (
+              <>Enter Pulse</>
+            )}
+          </span>
+        </button>
 
-      <p className="max-w-sm text-center text-xs text-zinc-500">
-        No sign-up. Your dot is placed 1–3&nbsp;km from your real location.
-        Nothing is stored — closing the tab ends everything.
-      </p>
+        {status === "error" && (
+          <p className="max-w-sm animate-fade-in text-center text-sm text-red-400">
+            {error}
+          </p>
+        )}
+
+        <p
+          className="max-w-sm animate-slide-up text-center text-xs leading-relaxed text-zinc-600"
+          style={{ animationDelay: "0.16s" }}
+        >
+          No sign-up. Your dot lands 1–3&nbsp;km from your real location.
+          Nothing is stored — closing the tab ends everything.
+        </p>
+      </div>
     </div>
   );
 }
