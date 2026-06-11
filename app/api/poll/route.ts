@@ -1,20 +1,22 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { STALE_MS, SIGNAL_TTL_MS } from "@/lib/presence";
+import { readSessionId } from "@/lib/session";
 import type { PollResponse } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// GET /api/poll?id= — the single endpoint that drives the live map.
+// GET /api/poll — the single endpoint that drives the live map.
 // It (1) heartbeats the caller, (2) reaps stale presence + orphan signals,
 // (3) returns the filtered online peers, and (4) drains this user's mailbox.
+// Identity comes from the signed session cookie never a query param, so a
+// caller can only ever drain its own mailbox.
 export async function GET(request: NextRequest) {
-  const params = request.nextUrl.searchParams;
-  const id = params.get("id");
+  const id = readSessionId(request);
 
   if (!id) {
-    return Response.json({ error: "missing id" }, { status: 400 });
+    return Response.json({ error: "unauthenticated" }, { status: 401 });
   }
 
   const now = Date.now();

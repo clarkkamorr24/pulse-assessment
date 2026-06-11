@@ -1,16 +1,16 @@
 // Client-side helpers for talking to the coordination API.
 import type { PollResponse, SignalType } from "@/lib/types";
 
-export async function join(
-  id: string,
-  lat: number,
-  lng: number,
-): Promise<void> {
-  await fetch("/api/join", {
+// Join the map. The server mints the session id and returns it (and sets a signed HttpOnly session cookie that authenticates every later request).
+export async function join(lat: number, lng: number): Promise<string> {
+  const res = await fetch("/api/join", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ id, lat, lng }),
+    body: JSON.stringify({ lat, lng }),
   });
+  if (!res.ok) throw new Error(`join failed: ${res.status}`);
+  const data = (await res.json()) as { id: string };
+  return data.id;
 }
 
 export async function poll(id: string): Promise<PollResponse> {

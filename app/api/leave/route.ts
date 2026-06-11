@@ -1,23 +1,18 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { readSessionId } from "@/lib/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// POST /api/leave — body { id }. Removes the presence row and any pending
-// signals to/from this user. Called via navigator.sendBeacon on tab close, so
-// the body may arrive as text — parse defensively.
+// POST /api/leave — removes the caller's presence row and any pending signals
+// to/from them. Identity comes from the signed session cookie (sent
+// automatically by navigator.sendBeacon on tab close), so a caller can only
+// ever remove themselves — never force another user offline.
 export async function POST(request: NextRequest) {
-  let id: string | undefined;
-  try {
-    const text = await request.text();
-    id = text ? (JSON.parse(text)?.id as string | undefined) : undefined;
-  } catch {
-    id = undefined;
-  }
-
-  if (typeof id !== "string" || !id) {
-    return Response.json({ error: "invalid id" }, { status: 400 });
+  const id = readSessionId(request);
+  if (!id) {
+    return Response.json({ error: "unauthenticated" }, { status: 401 });
   }
 
   // Independent cleanup deletes — no atomicity needed (and interactive

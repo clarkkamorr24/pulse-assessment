@@ -24,7 +24,8 @@ const REQUEST_TIMEOUT_MS = 30_000;
 
 export default function Home() {
   const [phase, setPhase] = useState<"gate" | "live">("gate");
-  const [sessionId] = useState(() => crypto.randomUUID());
+  // The session id is minted by the server on join (see handleReady) and authenticated via a signed HttpOnly cookie
+  const [sessionId, setSessionId] = useState<string>("");
   const [peers, setPeers] = useState<PeerDot[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [notice, setNotice] = useState<string | null>(null);
@@ -305,7 +306,8 @@ export default function Home() {
 
   async function handleReady(lat: number, lng: number) {
     setMyLocation({ lat, lng });
-    await join(sessionId, lat, lng);
+    const id = await join(lat, lng);
+    setSessionId(id);
     setPhase("live");
   }
 
