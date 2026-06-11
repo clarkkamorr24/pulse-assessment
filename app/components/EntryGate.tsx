@@ -55,7 +55,7 @@ export default function EntryGate({
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
               <span className="relative inline-flex h-3 w-3 rounded-full bg-linear-to-br from-emerald-400 to-cyan-400" />
             </span>
-            <span className="text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">
+            <span className="animate-vibrate text-sm font-medium uppercase tracking-[0.3em] text-zinc-400">
               Pulse
             </span>
           </div>

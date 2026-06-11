@@ -9,6 +9,7 @@ import VideoPanel from "./components/VideoPanel";
 import { join, leave, poll, sendSignal } from "@/lib/api";
 import { PeerSession, type DescType, type PeerControl } from "@/lib/webrtc";
 import { POLL_INTERVAL_MS } from "@/lib/presence";
+import { pickIcebreaker } from "@/lib/icebreakers";
 import { type PeerDot, type SignalMsg } from "@/lib/types";
 
 type Conn =
@@ -35,6 +36,11 @@ export default function Home() {
     null,
   );
 
+  const [prompt, setPrompt] = useState<string | null>(null);
+  const [peerTyping, setPeerTyping] = useState(false);
+  const typingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const peerTypingTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const [conn, _setConn] = useState<Conn>({ kind: "idle" });
   const connRef = useRef<Conn>(conn);
   const setConn = (c: Conn) => {
@@ -50,7 +56,6 @@ export default function Home() {
   };
 
   const peerRef = useRef<PeerSession | null>(null);
-  const msgId = useRef(0);
   const requestTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function showNotice(text: string) {
@@ -58,18 +63,62 @@ export default function Home() {
     window.setTimeout(() => setNotice(null), 3500);
   }
 
-  function addMessage(mine: boolean, text: string) {
-    setMessages((prev) => [...prev, { id: msgId.current++, mine, text }]);
+  // Messages carry a shared id (minted by the sender) so reactions reference
+  // the same message on both peers.
+  function addMessage(mine: boolean, text: string, mid: string) {
+    setMessages((prev) => [...prev, { id: mid, mine, text, reactions: {} }]);
+  }
+
+  function bumpReaction(mid: string, emoji: string) {
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === mid
+          ? {
+              ...m,
+              reactions: {
+                ...m.reactions,
+                [emoji]: (m.reactions[emoji] ?? 0) + 1,
+              },
+            }
+          : m,
+      ),
+    );
+  }
+
+  // Local reaction: update our view and tell the peer.
+  function reactToMessage(mid: string, emoji: string) {
+    bumpReaction(mid, emoji);
+    peerRef.current?.sendReaction(mid, emoji);
+  }
+
+  // Called on each keystroke: signal "typing" and auto-clear after a pause.
+  function handleLocalTyping() {
+    const ps = peerRef.current;
+    if (!ps) return;
+    ps.sendTyping(true);
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    typingTimer.current = setTimeout(() => ps.sendTyping(false), 1500);
+  }
+
+  // Pick a fresh icebreaker and share it with the peer.
+  function newPrompt() {
+    const p = pickIcebreaker(prompt);
+    setPrompt(p);
+    peerRef.current?.sendPrompt(p);
   }
 
   function teardown(message?: string) {
     if (requestTimer.current) clearTimeout(requestTimer.current);
+    if (typingTimer.current) clearTimeout(typingTimer.current);
+    if (peerTypingTimer.current) clearTimeout(peerTypingTimer.current);
     peerRef.current?.close();
     peerRef.current = null;
     setLocalStream(null);
     setRemoteStream(null);
     setVideo("none");
     setMessages([]);
+    setPrompt(null);
+    setPeerTyping(false);
     setConn({ kind: "idle" });
     if (message) showNotice(message);
   }
@@ -79,7 +128,7 @@ export default function Home() {
       onSignal: (type: DescType, payload: string) => {
         void sendSignal(sessionId, peerId, type, payload);
       },
-      onChat: (text) => addMessage(false, text),
+      onChat: (text, mid) => addMessage(false, text, mid),
       onControl: (ctrl) => handleControl(ctrl),
       onRemoteStream: (stream) => setRemoteStream(stream),
       onConnectionState: (state) => {
@@ -89,7 +138,25 @@ export default function Home() {
       },
       onChannelOpen: () => {
         setConn({ kind: "connected", peerId });
+        // One side seeds the shared icebreaker so both see the same prompt.
+        if (initiator) {
+          const p = pickIcebreaker();
+          setPrompt(p);
+          peerRef.current?.sendPrompt(p);
+        }
       },
+      onTyping: (on) => {
+        setPeerTyping(on);
+        if (peerTypingTimer.current) clearTimeout(peerTypingTimer.current);
+        if (on) {
+          peerTypingTimer.current = setTimeout(
+            () => setPeerTyping(false),
+            4000,
+          );
+        }
+      },
+      onReaction: (mid, emoji) => bumpReaction(mid, emoji),
+      onPrompt: (text) => setPrompt(text),
     });
     peerRef.current = ps;
   }
@@ -362,10 +429,18 @@ export default function Home() {
           messages={messages}
           connected={conn.kind === "connected"}
           videoBusy={video !== "none"}
+          prompt={prompt}
+          peerTyping={peerTyping}
           onSend={(text) => {
-            peerRef.current?.sendChat(text);
-            addMessage(true, text);
+            const mid = crypto.randomUUID();
+            peerRef.current?.sendChat(text, mid);
+            peerRef.current?.sendTyping(false);
+            if (typingTimer.current) clearTimeout(typingTimer.current);
+            addMessage(true, text, mid);
           }}
+          onTyping={handleLocalTyping}
+          onReact={reactToMessage}
+          onNewPrompt={newPrompt}
           onStartVideo={startVideoRequest}
           onEnd={endConnection}
         />

@@ -7,11 +7,14 @@ export type PeerControl =
 
 interface PeerCallbacks {
   onSignal: (type: DescType, payload: string) => void;
-  onChat: (text: string) => void;
+  onChat: (text: string, mid: string) => void;
   onControl: (ctrl: PeerControl) => void;
   onRemoteStream: (stream: MediaStream | null) => void;
   onConnectionState: (state: RTCPeerConnectionState) => void;
   onChannelOpen: () => void;
+  onTyping: (on: boolean) => void;
+  onReaction: (mid: string, emoji: string) => void;
+  onPrompt: (text: string) => void;
 }
 
 const ICE_CONFIG: RTCConfiguration = {
@@ -76,10 +79,24 @@ export class PeerSession {
     dc.onmessage = (e) => {
       try {
         const msg = JSON.parse(e.data as string);
-        if (msg.t === "chat" && typeof msg.text === "string") {
-          this.cb.onChat(msg.text);
+        if (
+          msg.t === "chat" &&
+          typeof msg.text === "string" &&
+          typeof msg.mid === "string"
+        ) {
+          this.cb.onChat(msg.text, msg.mid);
         } else if (msg.t === "ctrl" && typeof msg.ctrl === "string") {
           this.cb.onControl(msg.ctrl as PeerControl);
+        } else if (msg.t === "typing") {
+          this.cb.onTyping(Boolean(msg.on));
+        } else if (
+          msg.t === "reaction" &&
+          typeof msg.mid === "string" &&
+          typeof msg.emoji === "string"
+        ) {
+          this.cb.onReaction(msg.mid, msg.emoji);
+        } else if (msg.t === "prompt" && typeof msg.text === "string") {
+          this.cb.onPrompt(msg.text);
         }
       } catch {}
     };
@@ -128,12 +145,24 @@ export class PeerSession {
     }
   }
 
-  sendChat(text: string) {
-    this.safeSend({ t: "chat", text });
+  sendChat(text: string, mid: string) {
+    this.safeSend({ t: "chat", text, mid });
   }
 
   sendControl(ctrl: PeerControl) {
     this.safeSend({ t: "ctrl", ctrl });
+  }
+
+  sendTyping(on: boolean) {
+    this.safeSend({ t: "typing", on });
+  }
+
+  sendReaction(mid: string, emoji: string) {
+    this.safeSend({ t: "reaction", mid, emoji });
+  }
+
+  sendPrompt(text: string) {
+    this.safeSend({ t: "prompt", text });
   }
 
   private safeSend(obj: unknown) {

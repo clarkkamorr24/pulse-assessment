@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pulse — meet a stranger, anywhere on Earth",
+  title: "PULSE — meet a stranger, anywhere on Earth",
   description:
     "A living globe of anonymous strangers. Tap a glowing dot and start talking — text or video, peer-to-peer. No accounts, nothing stored.",
 };
