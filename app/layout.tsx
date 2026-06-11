@@ -13,8 +13,13 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pulse",
-  description: "A living globe of anonymous strangers. Tap a dot, start talking.",
+  title: "Pulse — meet a stranger, anywhere on Earth",
+  description:
+    "A living globe of anonymous strangers. Tap a glowing dot and start talking — text or video, peer-to-peer. No accounts, nothing stored.",
+};
+
+export const viewport = {
+  themeColor: "#05070d",
 };
 
 export default function RootLayout({
